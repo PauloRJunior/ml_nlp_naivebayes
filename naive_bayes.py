@@ -35,7 +35,7 @@ from sklearn.ensemble import RandomForestClassifier
 
 
 #Carrega a base inicial
-base_inicial = pd.read_csv('base_tags.csv')
+base_inicial = pd.read_csv('bases/base_tags.csv')
 
 #Dividindo a base em 2 (1 - treino e 2 - Teste do modelo)
 
@@ -183,11 +183,24 @@ with open ('modelo_vectorizer_naive_bayes.pkl' , 'wb') as file:
 
 
 
-# Atribuindo o predict a base e salvando com resultado
-base_treino['predict'] = modelo.predict(data_count_vector)
-base_treino.to_csv('base_predict.csv', index = False)
+# Use o vetorizador correto para transformar a base_teste antes de fazer as previsões
+vec_transform_teste = vectorizer.transform(base_teste['post'])
 
+# Converter a matriz esparsa em matriz densa
+data_count_vector_teste = vec_transform_teste.toarray()
 
-frase = 'jogou super bem'
+# Criar matriz de zeros com o mesmo número de colunas que x_train
+data_count_vector_teste_preenchida = np.zeros((data_count_vector_teste.shape[0], x_train.shape[1]))
+
+# Copiar os valores da matriz data_count_vector_teste para data_count_vector_teste_preenchida
+data_count_vector_teste_preenchida[:, :data_count_vector_teste.shape[1]] = data_count_vector_teste
+
+base_teste['predict'] = modelo.predict(data_count_vector_teste_preenchida)
+
+base_teste.to_csv('base_teste_predict.csv', index = False , sep = ',')
+
+# Testando um post aleatório
+
+frase = 'Gamarra jogou bem e ajudou o Palmeiras a vencer'
 frase_transform = vectorizer.transform([frase])
 modelo.predict(frase_transform)
